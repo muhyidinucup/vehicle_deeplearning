@@ -7,142 +7,126 @@ https://tinyurl.com/Vechiledataset
 #Buat Notepad Collab baru, copy paste semua code dibawah pada noptepad collab baru tersebut
 https://colab.research.google.com/drive/1Z8ioYPY8L-Qj4MUf1SM2IwE9k9l2JIW8?usp=sharing
 
-#berikut code vechile_clasiffier dan fungsinya
+Struktur Kode dan Fungsinya 🛠️
+1. Menghubungkan Google Drive 📂
 from google.colab import drive
 drive.mount('/content/drive')
-Menghubungkan Google Drive ke direktori /content/drive di Colab. Ini akan meminta otorisasi (token) untuk mengakses Drive Anda.
+Fungsi: Menghubungkan Google Drive ke Colab untuk mengakses dataset di direktori /content/drive. Anda akan diminta token otorisasi untuk mengakses Drive.
 
+2. Instalasi Gradio 🌐
 !pip install gradio
-Menginstal library gradio di lingkungan Colab menggunakan perintah shell (!). Gradio digunakan untuk membuat antarmuka web interaktif.
+Fungsi: Menginstal library Gradio di Colab untuk membuat antarmuka web interaktif guna menguji klasifikasi gambar.
 
+3. Impor Library 📚
 import tensorflow as tf
-Mengimpor ImageDataGenerator untuk memproses dan augmentasi gambar secara otomatis (misalnya, rescaling, rotasi, dll.).
-
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Sequential
-Mengimpor Sequential, kelas untuk membuat model berurutan (layer demi layer) di Keras.
-
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
-Mengimpor layer spesifik dari Keras:
-Conv2D: Layer konvolusi untuk ekstraksi fitur gambar.
-MaxPooling2D: Layer pooling untuk mengurangi dimensi spasial.
-Flatten: Mengubah data 2D menjadi 1D.
-Dense: Layer fully connected untuk klasifikasi.
-Dropout: Mencegah overfitting dengan mematikan beberapa neuron secara acak.
-
 import gradio as gr
-Mengimpor gradio untuk membuat antarmuka pengguna interaktif.
-
 import numpy as np
-Mengimpor numpy untuk operasi array numerik.
-
 from PIL import Image
-Mengimpor Image dari PIL (Python Imaging Library) untuk memproses gambar.
-
 import os
-Mengimpor os untuk operasi sistem file, seperti menghitung jumlah file di direktori.
+Fungsi:
+tensorflow: Library untuk membangun dan melatih model deep learning.
+ImageDataGenerator: Memproses dan menormalkan gambar (misalnya, mengubah skala piksel).
+Sequential: Membuat model CNN dengan layer berurutan.
+Conv2D, MaxPooling2D, Flatten, Dense, Dropout: Layer untuk ekstraksi fitur, reduksi dimensi, dan klasifikasi.
+gradio: Membuat antarmuka pengguna interaktif.
+numpy: Operasi array numerik.
+PIL.Image: Memproses gambar.
+os: Mengelola file dan direktori.
 
+4. Menentukan Direktori Dataset 📂
 train_dir = '/content/drive/MyDrive/vechile_dataset/train'
 validation_dir = '/content/drive/MyDrive/vechile_dataset/validation'
 test_dir = '/content/drive/MyDrive/vechile_dataset/test'
-Mendefinisikan path ke direktori dataset di Google Drive:
-train_dir: Direktori data pelatihan.
-validation_dir: Direktori data validasi.
-test_dir: Direktori data pengujian.
+Fungsi: Menentukan lokasi dataset di Google Drive:
+train_dir: Data pelatihan.
+validation_dir: Data validasi.
+test_dir: Data pengujian.
 
+5. Preprocessing Gambar 🖼️
 train_datagen = ImageDataGenerator(rescale=1./255)
 validation_datagen = ImageDataGenerator(rescale=1./255)
-Membuat objek ImageDataGenerator untuk data pelatihan dan validasi. Parameter rescale=1./255 menormalkan nilai piksel gambar dari [0, 255] menjadi [0, 1].
+Fungsi: Membuat objek ImageDataGenerator untuk menormalkan nilai piksel gambar dari [0, 255] menjadi [0, 1].
 
+6. Membuat Generator Data 📊
 train_generator = train_datagen.flow_from_directory(
     train_dir,
     target_size=(150, 150),
     batch_size=32,
-    class_mode='binary')
-Membuat generator untuk data pelatihan:
-
-train_dir: Direktori data pelatihan.
-target_size=(150, 150): Mengubah ukuran gambar menjadi 150x150 piksel.
-batch_size=32: Jumlah gambar per batch untuk pelatihan.
-class_mode='binary': Mode klasifikasi biner (dua kelas: mobil atau motor).
-
+    class_mode='binary'
+)
 validation_generator = validation_datagen.flow_from_directory(
     validation_dir,
     target_size=(150, 150),
     batch_size=32,
-    class_mode='binary')
-Membuat generator untuk data validasi, dengan parameter serupa seperti train_generator.
+    class_mode='binary'
+)
+Fungsi:
+Membuat generator untuk memuat data pelatihan dan validasi.
+target_size=(150, 150): Mengubah ukuran gambar menjadi 150x150 piksel.
+batch_size=32: Memproses 32 gambar per batch.
+class_mode='binary': Klasifikasi biner (mobil 🚗 = 0, motor 🏍️ = 1).
 
+7. Menghitung Jumlah Gambar 🔢
 def count_images(directory):
-Mendefinisikan fungsi count_images untuk menghitung jumlah file gambar (.jpg atau .png) di direktori tertentu.
-
-count = 0
-Inisialisasi variabel count untuk menghitung jumlah gambar.
-
-for root, dirs, files in os.walk(directory):
-Menggunakan os.walk untuk menelusuri semua file dan subdirektori di directory.
-
-count += len([file for file in files if file.endswith('.jpg') or file.endswith('.png')])
-Menghitung file dengan ekstensi .jpg atau .png dan menambahkannya ke count.
-
-return count
-Mengembalikan total jumlah gambar.
+    count = 0
+    for root, dirs, files in os.walk(directory):
+        count += len([file for file in files if file.endswith('.jpg') or file.endswith('.png')])
+    return count
 
 num_train_images = count_images(train_dir)
 num_validation_images = count_images(validation_dir)
 num_test_images = count_images(test_dir)
-Menghitung jumlah gambar di direktori pelatihan, validasi, dan pengujian menggunakan fungsi count_images.
-
 print(f"Jumlah gambar di train set: {num_train_images}")
 print(f"Jumlah gambar di validation set: {num_validation_images}")
 print(f"Jumlah gambar di test set: {num_test_images}")
-Mencetak jumlah gambar di setiap set untuk memverifikasi data.
+Fungsi:
+Fungsi count_images: Menghitung jumlah file gambar (.jpg atau .png) di direktori.
+Menampilkan jumlah gambar di set pelatihan, validasi, dan pengujian untuk verifikasi.
 
+8. Menghitung Batch 📏
 batch_size = 32
-Mendefinisikan ukuran batch (32) untuk digunakan dalam perhitungan berikutnya.
-
 steps_per_epoch = num_train_images // batch_size
 validation_steps = num_validation_images // batch_size
-Menghitung:
-steps_per_epoch: Jumlah batch per epoch untuk pelatihan (total gambar pelatihan dibagi batch size).
-validation_steps: Jumlah batch untuk validasi.
+Fungsi: Menghitung jumlah batch per epoch untuk pelatihan (steps_per_epoch) dan validasi (validation_steps) berdasarkan jumlah gambar dan ukuran batch (32).
 
+9. Membangun Model CNN 🧠
 model = Sequential([
-Membuat model Sequential dengan layer-layer berikut:
-
-Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
-Layer konvolusi pertama: 32 filter ukuran 3x3, aktivasi ReLU, menerima input gambar 150x150 piksel dengan 3 kanal (RGB).
-
-MaxPooling2D(2, 2),
-Layer pooling pertama: Mengurangi dimensi spasial dengan faktor 2 menggunakan window 2x2.
-
-Conv2D(64, (3, 3), activation='relu'),
+    Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
     MaxPooling2D(2, 2),
-Layer konvolusi kedua (64 filter) dan pooling kedua, meningkatkan ekstraksi fitur dan mengurangi dimensi.
-
-Conv2D(128, (3, 3), activation='relu'),
+    Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
-Layer konvolusi ketiga (128 filter) dan pooling ketiga, untuk fitur yang lebih kompleks.
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D(2, 2),
+    Flatten(),
+    Dense(512, activation='relu'),
+    Dropout(0.5),
+    Dense(1, activation='sigmoid')
+])
+Fungsi:
+Membuat model CNN berurutan:
+Conv2D: Layer konvolusi (32, 64, 128 filter) untuk ekstraksi fitur gambar.
+MaxPooling2D: Mengurangi dimensi gambar untuk efisiensi.
+Flatten: Mengubah data 2D menjadi 1D.
+Dense(512): Layer fully connected untuk klasifikasi.
+Dropout(0.5): Mencegah overfitting dengan mematikan 50% neuron.
+Dense(1, activation='sigmoid'): Output untuk klasifikasi biner (mobil 🚗 atau motor 🏍️).
 
-Flatten(),
-Mengubah output 2D dari layer sebelumnya menjadi vektor 1D untuk input ke layer dense.
-
-Dense(512, activation='relu'),
-Layer fully connected dengan 512 neuron dan aktivasi ReLU.
-
-Dropout(0.5),
-Layer dropout: Mematikan 50% neuron secara acak untuk mencegah overfitting.
-
-Dense(1, activation='sigmoid')])
-Layer output: 1 neuron dengan aktivasi sigmoid untuk klasifikasi biner (0 untuk mobil, 1 untuk motor).
-
-model.compile(loss='binary_crossentropy',
-              optimizer=tf.keras.optimizers.Adam(),
-              metrics=['accuracy'])
-Mengompilasi model:
+10. Kompilasi Model ⚙️
+model.compile(
+    loss='binary_crossentropy',
+    optimizer=tf.keras.optimizers.Adam(),
+    metrics=['accuracy']
+)
+Fungsi:
+Mengatur model dengan:
 loss='binary_crossentropy': Fungsi kerugian untuk klasifikasi biner.
-optimizer='Adam': Optimizer Adam untuk mempercepat gradient descent.
+optimizer='Adam': Optimizer untuk pelatihan efisien.
 metrics=['accuracy']: Melacak akurasi selama pelatihan.
 
+11. Melatih Model 🏋️
 history = model.fit(
     train_generator,
     steps_per_epoch=steps_per_epoch,
@@ -150,52 +134,36 @@ history = model.fit(
     validation_data=validation_generator,
     validation_steps=validation_steps
 )
-Melatih model:
-train_generator: Data pelatihan.
-steps_per_epoch: Jumlah batch per epoch.
-epochs=10: Melatih selama 10 epoch.
-validation_data: Data validasi.
-validation_steps: Jumlah batch validasi per epoch.
+Fungsi: Melatih model selama 10 epoch menggunakan data pelatihan dan validasi.
 
+12. Menampilkan Riwayat Pelatihan 📈
 print(history.history)
-Mencetak riwayat pelatihan (loss dan akurasi untuk pelatihan dan validasi per epoch).
+Fungsi: Menampilkan metrik pelatihan (loss dan akurasi) untuk setiap epoch.
 
+13. Fungsi Klasifikasi Gambar 🖼️
 def classify_image(img):
-Mendefinisikan fungsi classify_image untuk memprediksi kelas gambar (mobil atau motor).
+    img = img.resize((150, 150))
+    img = np.array(img) / 255.0
+    img = np.expand_dims(img, axis=0)
+    prediction = model.predict(img)
+    return 'Car' if prediction < 0.5 else 'Motorcycle'
+Fungsi:
+Mengubah ukuran gambar menjadi 150x150 piksel.
+Menormalkan nilai piksel ke [0, 1].
+Menambahkan dimensi batch untuk prediksi.
+Memprediksi kelas gambar (mobil 🚗 jika < 0.5, motor 🏍️ jika ≥ 0.5).
 
-img = img.resize((150, 150))
-Mengubah ukuran gambar input menjadi 150x150 piksel menggunakan PIL.
-
-img = np.array(img) / 255.0
-Mengonversi gambar ke array NumPy dan menormalkan nilai piksel ke [0, 1].
-
-img = np.expand_dims(img, axis=0)
-Menambahkan dimensi batch (axis=0) untuk membuat input kompatibel dengan model (bentuk: [1, 150, 150, 3]).
-
-prediction = model.predict(img)
-Memprediksi kelas gambar menggunakan model yang telah dilatih.
-
-return 'Car' if prediction < 0.5 else 'Motorcycle'
-Mengembalikan label 'Car' jika prediksi < 0.5, atau 'Motorcycle' jika >= 0.5 (berdasarkan sigmoid).
-
+14. Antarmuka Gradio 🌐
 interface = gr.Interface(
-Membuat antarmuka Gradio untuk klasifikasi gambar.
-
-fn=classify_image,
-Fungsi yang akan dipanggil untuk memproses input (yaitu classify_image).
-
-inputs=gr.Image(type='pil'),
-Input antarmuka berupa gambar dalam format PIL.
-
-outputs="text",
-Output berupa teks (label: 'Car' atau 'Motorcycle').
-
-title="Vehicle Classifier",
+    fn=classify_image,
+    inputs=gr.Image(type='pil'),
+    outputs="text",
+    title="Vehicle Classifier",
     description="Upload a vehicle image (car or motorcycle) to classify it using a CNN.",
-Judul dan deskripsi antarmuka Gradio.
-
-allow_flagging="never"
-Menonaktifkan fitur "flagging" di Gradio (untuk mencegah pengguna menandai output).
-
+    allow_flagging="never"
+)
 interface.launch()
-Meluncurkan antarmuka Gradio, menghasilkan URL untuk mengakses antarmuka web interaktif.
+Fungsi:
+Membuat antarmuka web dengan Gradio untuk mengunggah dan mengklasifikasikan gambar.
+Menampilkan hasil klasifikasi sebagai teks (‘Car’ 🚗 atau ‘Motorcycle’ 🏍️).
+Menonaktifkan fitur flagging untuk antarmuka.
